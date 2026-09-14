@@ -3,98 +3,58 @@ import Navbar from './components/Navbar.jsx';
 import Hero from './components/Hero.jsx';
 import DestinationGrid from './components/DestinationGrid.jsx';
 import DestinationDetailModal from './components/DestinationDetailModal.jsx';
-import VehicleGrid from './components/VehicleGrid.jsx';
-import PackageGrid from './components/PackageGrid.jsx';
-import MultiDestinationBuilder from './components/MultiDestinationBuilder.jsx';
-import BusinessLocationSection from './components/BusinessLocationSection.jsx';
 import TrustSection from './components/TrustSection.jsx';
-import CustomerReviews from './components/CustomerReviews.jsx';
-import GallerySection from './components/GallerySection.jsx';
+import BusinessLocationSection from './components/BusinessLocationSection.jsx';
 import ContactSection from './components/ContactSection.jsx';
 import Footer from './components/Footer.jsx';
-import StickyMobileBar from './components/StickyMobileBar.jsx';
 import BookingModal from './components/BookingModal.jsx';
-import BookingTrackerModal from './components/BookingTrackerModal.jsx';
-import AdminLoginModal from './components/Admin/AdminLoginModal.jsx';
-import AdminDashboard from './components/Admin/AdminDashboard.jsx';
+import OwnerLoginModal from './components/OwnerLoginModal.jsx';
+import OwnerDashboard from './components/OwnerDashboard.jsx';
 
 import {
   fetchDestinations,
-  fetchVehicles,
-  fetchPackages,
-  fetchPickupLocations,
-  fetchReviews,
-  checkAdminAuth
+  checkOwnerAuth
 } from './services/api.js';
 
 export default function App() {
-  // Navigation & Active Section State
-  const [activeSection, setActiveSection] = useState('home');
-
-  // Application Data States
   const [destinations, setDestinations] = useState([]);
-  const [vehicles, setVehicles] = useState([]);
-  const [packages, setPackages] = useState([]);
-  const [pickupLocations, setPickupLocations] = useState([]);
-  const [reviews, setReviews] = useState([]);
-
+  
   // Modal States
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
-  const [bookingInitialData, setBookingInitialData] = useState({});
-  const [trackerModalOpen, setTrackerModalOpen] = useState(false);
-  const [selectedDestinationModal, setSelectedDestinationModal] = useState(null);
+  const [selectedDestinationForBooking, setSelectedDestinationForBooking] = useState('Mathura + Vrindavan');
+  const [detailModalDestination, setDetailModalDestination] = useState(null);
 
-  // Admin Portal States
-  const [adminUser, setAdminUser] = useState(() => {
+  // Owner Auth & Dashboard States
+  const [ownerUser, setOwnerUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('khushi_admin_user');
+      const saved = localStorage.getItem('khushi_owner_user');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   });
-  const [adminLoginOpen, setAdminLoginOpen] = useState(false);
-  const [viewingAdminDashboard, setViewingAdminDashboard] = useState(false);
+  const [ownerLoginOpen, setOwnerLoginOpen] = useState(false);
+  const [viewingOwnerDashboard, setViewingOwnerDashboard] = useState(false);
 
-  // Load Data on Mount
-  const loadInitialData = async () => {
-    try {
-      const [destData, vehData, pkgData, locData, revData] = await Promise.all([
-        fetchDestinations(),
-        fetchVehicles(),
-        fetchPackages(),
-        fetchPickupLocations(),
-        fetchReviews()
-      ]);
-
-      setDestinations(destData);
-      setVehicles(vehData);
-      setPackages(pkgData);
-      setPickupLocations(locData);
-      setReviews(revData);
-    } catch (err) {
-      console.error('Initial data load error:', err);
-    }
-  };
-
+  // Load Destinations on Mount
   useEffect(() => {
-    loadInitialData();
+    fetchDestinations()
+      .then(data => setDestinations(data))
+      .catch(err => console.error('Error fetching destinations:', err));
 
-    // Verify admin token if stored
-    if (localStorage.getItem('khushi_admin_token')) {
-      checkAdminAuth()
-        .then(res => setAdminUser(res.user))
+    if (localStorage.getItem('khushi_owner_token')) {
+      checkOwnerAuth()
+        .then(res => setOwnerUser(res.user))
         .catch(() => {
-          localStorage.removeItem('khushi_admin_token');
-          localStorage.removeItem('khushi_admin_user');
-          setAdminUser(null);
+          localStorage.removeItem('khushi_owner_token');
+          localStorage.removeItem('khushi_owner_user');
+          setOwnerUser(null);
         });
     }
   }, []);
 
-  // Smooth Navigation Handler
+  // Smooth Navigation
   const handleNavigate = (sectionId) => {
-    setActiveSection(sectionId);
     if (sectionId === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -105,138 +65,75 @@ export default function App() {
     }
   };
 
-  // Open Booking with Optional Prefilled Data
+  // Open Booking Modal with destination prefilled
   const handleOpenBooking = (prefill = {}) => {
-    setBookingInitialData(prefill);
+    if (prefill.destination) {
+      setSelectedDestinationForBooking(prefill.destination);
+    }
     setBookingModalOpen(true);
   };
 
-  // Trigger Booking from Destination
-  const handlePlanTripForDestination = (destination) => {
-    handleOpenBooking({
-      destinationName: destination.name,
-      destinations: [destination.name],
-      tripType: destination.distanceFromMathura > 150 ? 'Multi Day' : 'Round Trip',
-      pickupLocation: 'Mathura New Bus Stand (Main Office)'
-    });
+  // Owner Handlers
+  const handleOwnerLoginSuccess = (user) => {
+    setOwnerUser(user);
+    setOwnerLoginOpen(false);
+    setViewingOwnerDashboard(true);
   };
 
-  // Trigger Booking from Vehicle
-  const handleBookVehicle = (vehicle) => {
-    handleOpenBooking({
-      vehicleId: vehicle.id,
-      vehicleName: vehicle.name,
-      passengers: Math.min(vehicle.seats, 4)
-    });
+  const handleOwnerLogout = () => {
+    localStorage.removeItem('khushi_owner_token');
+    localStorage.removeItem('khushi_owner_user');
+    setOwnerUser(null);
+    setViewingOwnerDashboard(false);
   };
 
-  // Trigger Booking from Tour Package
-  const handleBookPackage = (pkg) => {
-    handleOpenBooking({
-      packageId: pkg.id,
-      packageTitle: pkg.title,
-      packageStartingPrice: pkg.startingPrice || pkg.starting_price,
-      destinationName: Array.isArray(pkg.destinations) ? pkg.destinations.join(' ➔ ') : pkg.destinations,
-      tripType: 'Multi Day',
-      specialRequests: `Book Package: ${pkg.title} (${pkg.duration})`
-    });
-  };
-
-  // Admin Login Handler
-  const handleAdminLoginSuccess = (user) => {
-    setAdminUser(user);
-    setAdminLoginOpen(false);
-    setViewingAdminDashboard(true);
-  };
-
-  // Admin Logout Handler
-  const handleAdminLogout = () => {
-    localStorage.removeItem('khushi_admin_token');
-    localStorage.removeItem('khushi_admin_user');
-    setAdminUser(null);
-    setViewingAdminDashboard(false);
-  };
-
-  // If Admin is viewing dashboard, render full admin console
-  if (viewingAdminDashboard && adminUser) {
+  // If Owner is viewing their dashboard, render the Owner Dashboard
+  if (viewingOwnerDashboard && ownerUser) {
     return (
-      <AdminDashboard
-        user={adminUser}
-        onLogout={handleAdminLogout}
-        onCloseToPublic={() => setViewingAdminDashboard(false)}
+      <OwnerDashboard
+        user={ownerUser}
+        onLogout={handleOwnerLogout}
+        onCloseToWebsite={() => setViewingOwnerDashboard(false)}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
       
-      {/* Global Navbar */}
+      {/* Top Navbar */}
       <Navbar
         onOpenBooking={() => handleOpenBooking()}
-        onOpenTracker={() => setTrackerModalOpen(true)}
-        onOpenAdmin={() => {
-          if (adminUser) setViewingAdminDashboard(true);
-          else setAdminLoginOpen(true);
+        onOpenOwner={() => {
+          if (ownerUser) setViewingOwnerDashboard(true);
+          else setOwnerLoginOpen(true);
         }}
-        activeSection={activeSection}
         onNavigate={handleNavigate}
       />
 
-      {/* Main Public Customer Page */}
+      {/* Main Content */}
       <main className="flex-1">
         
-        {/* Hero Section with Search */}
+        {/* Hero Section */}
         <Hero
           onOpenBooking={handleOpenBooking}
-          onSearchDestination={(term) => {
-            handleNavigate('destinations');
-          }}
           destinations={destinations}
         />
 
-        {/* Destination Catalogue */}
+        {/* Tourist Places & Destinations */}
         <DestinationGrid
           destinations={destinations}
-          onSelectDestination={(d) => setSelectedDestinationModal(d)}
-          onPlanTrip={handlePlanTripForDestination}
+          onSelectDestination={(d) => setDetailModalDestination(d)}
+          onBookDestination={(d) => handleOpenBooking({ destination: d.name })}
         />
 
-        {/* Custom Multi-City Route Planner */}
-        <MultiDestinationBuilder
-          onOpenBooking={handleOpenBooking}
-        />
-
-        {/* Vehicle Fleet & Fares */}
-        <VehicleGrid
-          vehicles={vehicles}
-          onBookVehicle={handleBookVehicle}
-        />
-
-        {/* Handcrafted Tour Packages */}
-        <PackageGrid
-          packages={packages}
-          onBookPackage={handleBookPackage}
-        />
-
-        {/* Trust & Guarantees */}
+        {/* 4 Trust Pillars */}
         <TrustSection />
 
-        {/* Verified Customer Reviews */}
-        <CustomerReviews
-          reviews={reviews}
-          onReviewAdded={loadInitialData}
-        />
+        {/* Physical Office at Mathura New Bus Stand & Google Maps */}
+        <BusinessLocationSection />
 
-        {/* Photo Gallery */}
-        <GallerySection />
-
-        {/* Mathura Physical Location & Hubs */}
-        <BusinessLocationSection
-          pickupLocations={pickupLocations}
-        />
-
-        {/* Contact & Direct Phone Numbers */}
+        {/* Direct Contact & WhatsApp */}
         <ContactSection />
 
       </main>
@@ -244,52 +141,37 @@ export default function App() {
       {/* Footer */}
       <Footer
         onOpenBooking={() => handleOpenBooking()}
-        onOpenTracker={() => setTrackerModalOpen(true)}
-        onOpenAdmin={() => {
-          if (adminUser) setViewingAdminDashboard(true);
-          else setAdminLoginOpen(true);
+        onOpenOwner={() => {
+          if (ownerUser) setViewingOwnerDashboard(true);
+          else setOwnerLoginOpen(true);
         }}
         onNavigate={handleNavigate}
       />
 
-      {/* Mobile Sticky Bar */}
-      <StickyMobileBar
-        onOpenBooking={() => handleOpenBooking()}
-      />
-
-      {/* ================= MODALS ================= */}
-
-      {/* Comprehensive Booking Wizard Modal */}
+      {/* Booking Form Modal */}
       <BookingModal
         isOpen={bookingModalOpen}
         onClose={() => setBookingModalOpen(false)}
-        initialData={bookingInitialData}
-        vehicles={vehicles}
-        destinations={destinations}
-        pickupLocations={pickupLocations}
+        initialDestination={selectedDestinationForBooking}
       />
 
-      {/* Live Booking Tracker Modal */}
-      {trackerModalOpen && (
-        <BookingTrackerModal
-          onClose={() => setTrackerModalOpen(false)}
-        />
-      )}
-
-      {/* Single Destination Detail Modal */}
-      {selectedDestinationModal && (
+      {/* Destination Detail Modal */}
+      {detailModalDestination && (
         <DestinationDetailModal
-          destination={selectedDestinationModal}
-          onClose={() => setSelectedDestinationModal(null)}
-          onPlanTrip={handlePlanTripForDestination}
+          destination={detailModalDestination}
+          onClose={() => setDetailModalDestination(null)}
+          onBook={(d) => {
+            setDetailModalDestination(null);
+            handleOpenBooking({ destination: d.name });
+          }}
         />
       )}
 
-      {/* Admin Login Modal */}
-      <AdminLoginModal
-        isOpen={adminLoginOpen}
-        onClose={() => setAdminLoginOpen(false)}
-        onLoginSuccess={handleAdminLoginSuccess}
+      {/* Owner Login Modal */}
+      <OwnerLoginModal
+        isOpen={ownerLoginOpen}
+        onClose={() => setOwnerLoginOpen(false)}
+        onLoginSuccess={handleOwnerLoginSuccess}
       />
 
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, MessageSquare, MapPin, Mail, Clock, Send, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Send, CheckCircle2 } from 'lucide-react';
 import { business } from '../data/business.js';
 
 export default function ContactSection() {
@@ -8,14 +8,11 @@ export default function ContactSection() {
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
 
-  const handleInquirySubmit = (e) => {
+  const handleWhatsAppSend = (e) => {
     e.preventDefault();
     if (!name || !phone) return;
-    
-    // Build direct WhatsApp trigger with inquiry
-    const text = `Radhe Radhe! Khushi Travels,\n\nName: ${name}\nPhone: ${phone}\nMessage: ${message || 'I have an inquiry regarding tours / cab hire.'}`;
+    const text = `Radhe Radhe Khushi Travels,\n\nName: ${name}\nPhone: ${phone}\nInquiry: ${message || 'I would like to inquire about tour cabs.'}`;
     window.open(`https://wa.me/91${business.whatsapp}?text=${encodeURIComponent(text)}`, '_blank');
-
     setSent(true);
     setTimeout(() => {
       setSent(false);
@@ -26,159 +23,135 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact" className="py-16 bg-slate-950 text-white border-t border-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="contact" className="py-16 bg-white border-b border-slate-200">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
-        {/* Title */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-400 px-3.5 py-1 rounded-full text-xs font-bold mb-3 border border-amber-500/20">
-            <Phone className="w-3.5 h-3.5" />
-            <span>24/7 Connect with Us</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Contact Khushi Travels
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full inline-block">
+            Direct Contact
+          </span>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            Speak Directly with Khushi Travels
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-slate-300">
-            Reach out anytime for urgent pickups, customized family tour packages, or bus rental bookings.
+          <p className="text-sm text-slate-600">
+            Call or WhatsApp us anytime for immediate cab booking or custom tour plans.
           </p>
         </div>
 
-        {/* Contact Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           
-          {/* Direct Phone Numbers & Coordinates */}
-          <div className="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
-            
+          {/* Phone Numbers Box */}
+          <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                Helpline & Booking Numbers
+              <h3 className="text-lg font-black text-slate-900">
+                Call Our Office Numbers
               </h3>
-              <p className="text-xs text-slate-400">
-                Tap any number below to dial our office or dispatch manager directly:
+              <p className="text-xs text-slate-500 mt-0.5">
+                Click any number below to dial directly:
               </p>
             </div>
 
-            {/* Clickable Phone Number Buttons */}
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {business.phones.map((p, idx) => (
                 <a
                   key={idx}
                   href={`tel:${p}`}
-                  className="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/40 p-3.5 rounded-2xl flex items-center justify-between transition-all group"
+                  className="bg-white hover:bg-slate-100 border border-slate-200 hover:border-slate-300 p-4 rounded-2xl flex items-center justify-between transition-all group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center">
                       <Phone className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-400">
-                        {idx === 0 ? 'Primary Booking Line' : idx === 1 ? 'Office Manager' : '24/7 Operations Desk'}
+                      <p className="text-[11px] font-semibold text-slate-500">
+                        {idx === 0 ? 'Primary Booking Desk' : idx === 1 ? 'Office Manager' : '24/7 Operations Desk'}
                       </p>
-                      <p className="font-mono font-black text-white text-base">
+                      <p className="font-mono font-bold text-slate-900 text-sm">
                         +91 {p}
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-amber-400 group-hover:underline">
-                    Call Now ➔
+                  <span className="text-xs font-bold text-amber-700 group-hover:underline">
+                    Call ➔
                   </span>
                 </a>
               ))}
             </div>
 
-            {/* WhatsApp Quick Direct Link */}
             <a
               href={`https://wa.me/91${business.whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-2xl text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 transition-all"
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 px-4 rounded-2xl text-xs sm:text-sm shadow-xs flex items-center justify-center gap-2 transition-colors text-center"
             >
               <MessageSquare className="w-4 h-4" />
-              <span>Chat with Us on WhatsApp (+91 {business.whatsapp})</span>
+              <span>Chat on WhatsApp (+91 {business.whatsapp})</span>
             </a>
-
-            {/* Office Location Snippet */}
-            <div className="pt-3 border-t border-slate-800/80 text-xs text-slate-300 space-y-1">
-              <p className="font-bold text-white flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-amber-400" />
-                {business.location.name}
-              </p>
-              <p className="text-slate-400 text-[11px] pl-5">
-                {business.location.address}
-              </p>
-            </div>
-
           </div>
 
-          {/* Quick Inquiry Form */}
-          <div className="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col justify-between">
+          {/* Quick Message Box */}
+          <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                Send Direct Message
+              <h3 className="text-lg font-black text-slate-900">
+                Send Quick Inquiry
               </h3>
-              <p className="text-xs text-slate-400 mb-5">
-                Have custom travel requirements? Send us a quick note and our team will connect with you on WhatsApp/Call.
+              <p className="text-xs text-slate-500 mt-0.5">
+                Leave your number and message, we will reply right away.
               </p>
+            </div>
 
-              {sent ? (
-                <div className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 p-5 rounded-2xl text-xs text-center font-bold space-y-2 animate-fade-in">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-                  <p>Inquiry Sent via WhatsApp! Our team will reply shortly.</p>
+            {sent ? (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-6 rounded-2xl text-xs text-center font-bold space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
+                <p>Opening WhatsApp chat with your inquiry!</p>
+              </div>
+            ) : (
+              <form onSubmit={handleWhatsAppSend} className="space-y-3.5 text-xs">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Your Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Anand Sharma"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-slate-900"
+                  />
                 </div>
-              ) : (
-                <form onSubmit={handleInquirySubmit} className="space-y-3.5 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Your Full Name *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Ramesh Chandra"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
 
-                  <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Mobile Number *</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="10-digit mobile number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      maxLength={10}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Mobile Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    maxLength={10}
+                    placeholder="10-digit mobile number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-slate-900 font-mono"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Travel Plan / Inquiry Message</label>
-                    <textarea
-                      rows={3}
-                      placeholder="e.g. Need 17 seater Tempo Traveller for Ayodhya from Mathura on next Sunday..."
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-amber-400 resize-none"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Tour Requirements</label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. 6 people for Vrindavan & Agra on weekend..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:outline-none focus:border-slate-900 resize-none"
+                  />
+                </div>
 
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3 rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Send Inquiry to Khushi Travels</span>
-                  </button>
-                </form>
-              )}
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>⚡ Average response time: &lt; 5 minutes</span>
-              <span className="text-emerald-400 font-bold">24/7 Available</span>
-            </div>
-
+                <button
+                  type="submit"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs sm:text-sm shadow-xs flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Send className="w-4 h-4 text-amber-400" />
+                  <span>Send WhatsApp Message</span>
+                </button>
+              </form>
+            )}
           </div>
 
         </div>
